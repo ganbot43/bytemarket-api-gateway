@@ -1,0 +1,74 @@
+server:
+  port: ${GATEWAY_PORT:8085}
+
+spring:
+  application:
+    name: bytemarket-api-gateway
+  profiles:
+    active: ${SPRING_PROFILE:local}
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # El backfill del kardex lo sirve order-service (es dueño de los
+        # pedidos). Va primero porque /api/admin/inventory/** de catálogo,
+        # declarado más abajo, también lo capturaría.
+        - id: order-service-inventory-backfill
+          uri: lb://bytemarket-order-service
+          predicates:
+            - Path=/api/admin/inventory/backfill
+
+        # ── user-service ───────────────────────────────────────────
+        # Las rutas /api/admin/** van primero: son más específicas que
+        # los comodines de catálogo y pedidos declarados más abajo.
+        - id: user-service-admin
+          uri: lb://bytemarket-user-service
+          predicates:
+            - Path=/api/admin/users/**,/api/admin/business-config
+        - id: user-service
+          uri: lb://bytemarket-user-service
+          predicates:
+            - Path=/api/auth/**,/api/users/**,/api/mi-perfil,/api/business-config
+
+        # ── catalog-service ────────────────────────────────────────
+        - id: catalog-service-admin
+          uri: lb://bytemarket-catalog-service
+          predicates:
+            # /api/upload/** vive en catálogo (ahí están las entidades que
+            # usan las imágenes) y exige rol de staff en su SecurityConfig.
+            - Path=/api/admin/products/**,/api/admin/categories/**,/api/admin/subcategories/**,/api/admin/banners/**,/api/admin/inventory/**,/api/admin/reviews/**,/api/upload/**
+        - id: catalog-service
+          uri: lb://bytemarket-catalog-service
+          predicates:
+            - Path=/api/catalog/**,/api/products/**,/api/categories/**,/api/subcategories/**,/api/banners/**,/api/landing/**,/api/reviews/**,/api/favorites/**
+
+        # ── order-service ──────────────────────────────────────────
+        - id: order-service-admin
+          uri: lb://bytemarket-order-service
+          predicates:
+            - Path=/api/admin/orders/**,/api/admin/payment-methods/**,/api/admin/coupons/**,/api/admin/reports/**,/api/admin/automation/**
+        - id: order-service
+          uri: lb://bytemarket-order-service
+          predicates:
+            - Path=/api/orders/**,/api/my-orders/**,/api/cart/**,/api/payment-methods/**,/api/coupons/**
+
+        # ── support-service ────────────────────────────────────────
+        - id: support-service-admin
+          uri: lb://bytemarket-support-service
+          predicates:
+            - Path=/api/admin/reclamaciones/**
+        - id: support-service
+          uri: lb://bytemarket-support-service
+          predicates:
+            - Path=/api/complaints/**,/api/reclamaciones/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}

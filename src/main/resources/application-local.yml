@@ -1,0 +1,11 @@
+# Perfil local del gateway.
+#
+# Aquí NO van credenciales: este archivo se versiona. Los valores reales
+# viven en el .env de este directorio, que está en .gitignore.
+#
+# El gateway no firma ni valida tokens (solo reenvía la cabecera
+# Authorization, o la cookie jwt_token si no hay cabecera); se declara el
+# mismo secreto que los servicios por coherencia.
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration: ${JWT_EXPIRATION:86400000}
