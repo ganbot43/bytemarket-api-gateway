@@ -52,7 +52,7 @@ spring:
         - id: order-service-admin
           uri: lb://bytemarket-order-service
           predicates:
-            - Path=/api/admin/orders/**,/api/admin/payment-methods/**,/api/admin/coupons/**,/api/admin/reports/**,/api/admin/automation/**
+            - Path=/api/admin/orders/**,/api/admin/payment-methods/**,/api/admin/coupons/**,/api/admin/reports/**,/api/admin/automation/**,/api/admin/caja/**
         - id: order-service
           uri: lb://bytemarket-order-service
           predicates:
