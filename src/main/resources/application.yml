@@ -30,11 +30,16 @@ spring:
         - id: user-service-admin
           uri: lb://bytemarket-user-service
           predicates:
-            - Path=/api/admin/users/**,/api/admin/business-config
+            # /api/admin/permissions es la matriz de Roles y permisos.
+            - Path=/api/admin/users/**,/api/admin/business-config,/api/admin/permissions
         - id: user-service
           uri: lb://bytemarket-user-service
           predicates:
-            - Path=/api/auth/**,/api/users/**,/api/mi-perfil,/api/business-config
+            # /api/me/** es lo que el panel pregunta sobre sí mismo: hoy sus
+            # permisos, con los que decide qué menú pintar y a qué rutas
+            # dejarle entrar. Sin esta ruta el panel se queda sin saberlo y no
+            # enseña nada, que es peor que un 403: parece que no hay nada.
+            - Path=/api/auth/**,/api/users/**,/api/mi-perfil,/api/business-config,/api/me/**
 
         # ── catalog-service ────────────────────────────────────────
         - id: catalog-service-admin
