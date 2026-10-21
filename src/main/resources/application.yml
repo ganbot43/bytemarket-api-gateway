@@ -30,8 +30,15 @@ spring:
         - id: user-service-admin
           uri: lb://bytemarket-user-service
           predicates:
-            # /api/admin/permissions es la matriz de Roles y permisos.
-            - Path=/api/admin/users/**,/api/admin/business-config,/api/admin/permissions
+            # La matriz de Roles y permisos y los puestos que reparte.
+            #
+            # Es la SEGUNDA vez que una ruta nueva de user-service se queda
+            # fuera de esta lista y responde 404 mientras el servicio la
+            # sirve sin problema. Cada ruta /api/admin que se añada allí hay
+            # que añadirla aquí: el gateway enruta por path y no descubre
+            # nada solo. El verificador de permisos del front las toca a
+            # todas justo para que esto se vea.
+            - Path=/api/admin/users/**,/api/admin/business-config,/api/admin/permissions,/api/admin/panel-roles/**
         - id: user-service
           uri: lb://bytemarket-user-service
           predicates:
